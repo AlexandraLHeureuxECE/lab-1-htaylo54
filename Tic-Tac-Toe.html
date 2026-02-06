@@ -4,115 +4,255 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Tic-Tac-Toe</title>
-  <style>
-    :root { color-scheme: light dark; }
-    body {
-      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-      margin: 0;
-      min-height: 100vh;
-      display: grid;
-      place-items: center;
-      background: #f6f7fb;
-      color: #111;
-    }
-    .app {
-      width: min(520px, 92vw);
-      background: #fff;
-      border-radius: 16px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.12);
-      padding: 20px;
-    }
-    h1 {
-      margin: 0 0 10px;
-      font-size: 1.25rem;
-      letter-spacing: 0.2px;
-    }
-    .status {
-      padding: 12px 14px;
-      border-radius: 12px;
-      background: #f1f3f8;
-      border: 1px solid #e5e8f2;
-      margin-bottom: 14px;
-      display: flex;
-      gap: 10px;
-      justify-content: space-between;
-      align-items: center;
-      flex-wrap: wrap;
-    }
-    .status strong { font-weight: 700; }
-    .controls {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
-    button {
-      border: 0;
-      border-radius: 12px;
-      padding: 10px 12px;
-      font-weight: 600;
-      cursor: pointer;
-      background: #2f6fed;
-      color: #fff;
-    }
-    button.secondary {
-      background: #e9edf7;
-      color: #1f2a44;
-    }
-    button:active { transform: translateY(1px); }
-    .board {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 10px;
-      margin-top: 14px;
-    }
-    .cell {
-      aspect-ratio: 1 / 1;
-      border-radius: 14px;
-      border: 1px solid #e5e8f2;
-      background: #fafbff;
-      display: grid;
-      place-items: center;
-      font-size: clamp(2.2rem, 8vw, 3.2rem);
-      font-weight: 800;
-      cursor: pointer;
-      user-select: none;
-      transition: transform 80ms ease, background 120ms ease, border-color 120ms ease;
-    }
-    .cell:hover { background: #f2f6ff; border-color: #cdd9ff; }
-    .cell:active { transform: scale(0.98); }
-    .cell[disabled] { cursor: not-allowed; opacity: 0.75; }
-    .cell.win {
-      background: #e8fff0;
-      border-color: #7ae39c;
-    }
-    .footer {
-      margin-top: 14px;
-      font-size: 0.9rem;
-      color: #56607a;
-    }
+<style>
+  :root {
+    /* Classic (default) theme */
+    --page-bg: #f6f7fb;
+    --card-bg: #ffffff;
+    --text: #111827;
+    --muted: #56607a;
 
-    /* Stronger, clearer marks */
-    .cell {
-        color: #1f2a44;          /* darker default text */
-        font-weight: 900;        /* thicker X / O */
-    }
+    --panel-bg: #f1f3f8;
+    --panel-border: #e5e8f2;
 
-    /* Color-code players */
-    .cell.x {
-        color: #2f6fed;          /* modern blue */
-    }
+    --cell-bg: #fafbff;
+    --cell-border: #e5e8f2;
+    --cell-hover: #f2f6ff;
+    --cell-hover-border: #cdd9ff;
 
-    .cell.o {
-        color: #e5484d;          /* modern red */
-    }
+    --primary: #2f6fed;
+    --secondary-bg: #e9edf7;
+    --secondary-text: #1f2a44;
 
-    /* Make winning line more obvious but still soft */
-    .cell.win {
-        background: #eaf3ff;
-        border-color: #2f6fed;
-    }
+    --x: #2f6fed;
+    --o: #e5484d;
 
-  </style>
+    --win-bg: #e8fff0;
+    --win-border: #7ae39c;
+
+    --shadow: 0 10px 30px rgba(0,0,0,0.12);
+    --blur: 10px;
+
+    --radius: 16px;
+  }
+
+  /* -----------------------------
+     POP THEME: noticeably different
+     (bold background + neon-ish accents)
+  ------------------------------*/
+  body.theme-pop {
+    /* animated multi-stop gradient background */
+    --page-bg: radial-gradient(1200px 700px at 10% 10%, rgba(255, 65, 145, 0.35) 0%, transparent 55%),
+               radial-gradient(1000px 700px at 90% 20%, rgba(0, 229, 255, 0.30) 0%, transparent 60%),
+               radial-gradient(1100px 800px at 50% 100%, rgba(57, 255, 20, 0.18) 0%, transparent 55%),
+               linear-gradient(120deg, #0b1020 0%, #120a2a 50%, #071a2a 100%);
+
+    /* glass card */
+    --card-bg: rgba(255, 255, 255, 0.10);
+    --text: #f8fafc;
+    --muted: rgba(248, 250, 252, 0.75);
+
+    --panel-bg: rgba(255, 255, 255, 0.08);
+    --panel-border: rgba(255, 255, 255, 0.18);
+
+    --cell-bg: rgba(255, 255, 255, 0.08);
+    --cell-border: rgba(255, 255, 255, 0.22);
+    --cell-hover: rgba(255, 255, 255, 0.14);
+    --cell-hover-border: rgba(0, 229, 255, 0.55);
+
+    --primary: #ff2fb2;          /* hot pink */
+    --secondary-bg: rgba(0, 229, 255, 0.14);
+    --secondary-text: #8ff6ff;
+
+    --x: #00e5ff;                /* cyan */
+    --o: #ffcc00;                /* electric gold */
+
+    --win-bg: rgba(57, 255, 20, 0.14);
+    --win-border: rgba(57, 255, 20, 0.85);
+
+    --shadow: 0 18px 60px rgba(0,0,0,0.55);
+    --blur: 14px;
+  }
+
+  :root { color-scheme: light; }
+
+  body {
+    font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+    margin: 0;
+    min-height: 100vh;
+    display: grid;
+    place-items: center;
+    background: var(--page-bg);
+    color: var(--text);
+    overflow-x: hidden;
+  }
+
+  /* Subtle animated background only in Pop theme */
+  body.theme-pop::before {
+    content: "";
+    position: fixed;
+    inset: -40%;
+    background:
+      conic-gradient(from 0deg,
+        rgba(255, 47, 178, 0.20),
+        rgba(0, 229, 255, 0.18),
+        rgba(255, 204, 0, 0.12),
+        rgba(57, 255, 20, 0.14),
+        rgba(255, 47, 178, 0.20));
+    filter: blur(60px);
+    opacity: 0.55;
+    animation: spin 18s linear infinite;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  @keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+
+  .app {
+    width: min(520px, 92vw);
+    background: var(--card-bg);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 20px;
+    backdrop-filter: blur(var(--blur));
+    border: 1px solid rgba(255,255,255,0.0);
+    position: relative;
+    z-index: 1;
+  }
+
+  body.theme-pop .app {
+    border: 1px solid rgba(255, 255, 255, 0.16);
+  }
+
+  h1 {
+    margin: 0 0 10px;
+    font-size: 1.25rem;
+    letter-spacing: 0.2px;
+  }
+
+  .status {
+    padding: 12px 14px;
+    border-radius: 12px;
+    background: var(--panel-bg);
+    border: 1px solid var(--panel-border);
+    margin-bottom: 14px;
+    display: flex;
+    gap: 10px;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  .status strong { font-weight: 800; }
+
+  .controls {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+
+  .themeLabel {
+    font-size: 0.85rem;
+    color: var(--muted);
+    margin-right: 6px;
+  }
+
+  button {
+    border: 0;
+    border-radius: 12px;
+    padding: 10px 12px;
+    font-weight: 700;
+    cursor: pointer;
+    background: var(--primary);
+    color: white;
+    transition: transform 80ms ease, filter 120ms ease, box-shadow 120ms ease;
+  }
+
+  button.secondary {
+    background: var(--secondary-bg);
+    color: var(--secondary-text);
+    border: 1px solid var(--panel-border);
+  }
+
+  button:hover {
+    filter: brightness(1.06);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.10);
+  }
+
+  body.theme-pop button:hover {
+    box-shadow: 0 12px 24px rgba(0,0,0,0.35);
+  }
+
+  button:active { transform: translateY(1px); }
+
+  .board {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-top: 14px;
+  }
+
+  .cell {
+    aspect-ratio: 1 / 1;
+    border-radius: 14px;
+    border: 1px solid var(--cell-border);
+    background: var(--cell-bg);
+    display: grid;
+    place-items: center;
+    font-size: clamp(2.2rem, 8vw, 3.2rem);
+    font-weight: 900;
+    cursor: pointer;
+    user-select: none;
+    transition: transform 80ms ease, background 120ms ease, border-color 120ms ease, box-shadow 120ms ease;
+    color: var(--text);
+    text-shadow: none;
+  }
+
+  .cell:hover {
+    background: var(--cell-hover);
+    border-color: var(--cell-hover-border);
+  }
+
+  body.theme-pop .cell:hover {
+    box-shadow: 0 0 0 2px rgba(0, 229, 255, 0.18);
+  }
+
+  .cell:active { transform: scale(0.98); }
+  .cell[disabled] { cursor: not-allowed; opacity: 0.80; }
+
+  /* Player mark colours */
+  .cell.x { color: var(--x); }
+  .cell.o { color: var(--o); }
+
+  /* In pop theme, give marks a subtle glow for legibility */
+  body.theme-pop .cell.x,
+  body.theme-pop .cell.o {
+    text-shadow: 0 0 14px rgba(255,255,255,0.08), 0 0 20px currentColor;
+  }
+
+  .cell.win {
+    background: var(--win-bg);
+    border-color: var(--win-border);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--win-border) 28%, transparent);
+  }
+
+  body.theme-pop .cell.win {
+    box-shadow:
+      0 0 0 2px rgba(57,255,20,0.35),
+      0 0 26px rgba(57,255,20,0.20);
+  }
+
+  .footer {
+    margin-top: 14px;
+    font-size: 0.9rem;
+    color: var(--muted);
+  }
+</style>
+
 </head>
 <body>
   <main class="app" aria-label="Tic-Tac-Toe">
@@ -120,9 +260,20 @@
 
     <div class="status" role="status" aria-live="polite">
       <div id="statusText"><strong>Turn:</strong> Player X</div>
+
       <div class="controls">
-        <button id="restartBtn" class="secondary" type="button" title="Restart anytime">Restart</button>
-        <button id="newGameBtn" type="button" title="Start a fresh game" style="display:none;">New Game</button>
+        <span class="themeLabel" aria-hidden="true">Theme</span>
+        <button id="themeBtn" class="secondary" type="button" title="Toggle theme">
+          Classic
+        </button>
+
+        <button id="restartBtn" class="secondary" type="button" title="Restart anytime">
+          Restart
+        </button>
+
+        <button id="newGameBtn" type="button" title="Start a fresh game" style="display:none;">
+          New Game
+        </button>
       </div>
     </div>
 
@@ -139,6 +290,22 @@
       const statusTextEl = document.getElementById("statusText");
       const restartBtn = document.getElementById("restartBtn");
       const newGameBtn = document.getElementById("newGameBtn");
+      const themeBtn = document.getElementById("themeBtn");
+
+      // Theme toggle (Appearance customization feature)
+      const THEME_KEY = "ttt_theme";
+      function applyTheme(theme) {
+        document.body.classList.toggle("theme-pop", theme === "pop");
+        themeBtn.textContent = theme === "pop" ? "Pop" : "Classic";
+        localStorage.setItem(THEME_KEY, theme);
+      }
+      const savedTheme = localStorage.getItem(THEME_KEY) || "classic";
+      applyTheme(savedTheme);
+
+      themeBtn.addEventListener("click", () => {
+        const next = document.body.classList.contains("theme-pop") ? "classic" : "pop";
+        applyTheme(next);
+      });
 
       // Game state
       let board = Array(9).fill(null); // "X" | "O" | null
@@ -159,11 +326,11 @@
           btn.type = "button";
           btn.setAttribute("aria-label", `Cell ${i + 1}`);
           btn.textContent = board[i] ?? "";
-            if (board[i]) {
-            btn.classList.add(board[i].toLowerCase()); // adds "x" or "o"
-            }
-          btn.disabled = gameOver || board[i] !== null;
 
+          // Add mark class for contrast styling
+          if (board[i]) btn.classList.add(board[i].toLowerCase()); // "x" or "o"
+
+          btn.disabled = gameOver || board[i] !== null;
           btn.addEventListener("click", () => handleMove(i));
           boardEl.appendChild(btn);
         }
@@ -184,7 +351,6 @@
       }
 
       function highlightWinningLine(line) {
-        // Add .win class to the relevant buttons
         const cells = boardEl.querySelectorAll(".cell");
         line.forEach(idx => cells[idx]?.classList.add("win"));
       }
@@ -216,33 +382,20 @@
         setStatus(`<strong>Turn:</strong> Player ${currentPlayer}`);
       }
 
-      function resetGame({ keepFirstPlayer = false } = {}) {
+      function resetGame() {
         board = Array(9).fill(null);
         gameOver = false;
-        if (!keepFirstPlayer) currentPlayer = "X";
+        currentPlayer = "X";
         renderBoard();
         setStatus(`<strong>Turn:</strong> Player ${currentPlayer}`);
       }
 
-      restartBtn.addEventListener("click", () => {
-        // Restart anytime; keep it familiar: X goes first again
-        resetGame({ keepFirstPlayer: false });
-      });
-
-      newGameBtn.addEventListener("click", () => {
-        resetGame({ keepFirstPlayer: false });
-      });
+      restartBtn.addEventListener("click", resetGame);
+      newGameBtn.addEventListener("click", resetGame);
 
       // Initial render
       renderBoard();
       setStatus(`<strong>Turn:</strong> Player ${currentPlayer}`);
-
-      // Optional: keyboard support for accessibility (1-9 selects cells)
-      window.addEventListener("keydown", (e) => {
-        const n = Number(e.key);
-        if (!Number.isInteger(n) || n < 1 || n > 9) return;
-        handleMove(n - 1);
-      });
     })();
   </script>
 </body>
