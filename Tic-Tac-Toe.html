@@ -91,17 +91,27 @@
       color: #56607a;
     }
 
-    /* Dark mode tweaks */
-    @media (prefers-color-scheme: dark) {
-      body { background: #0b1020; color: #e9ecf5; }
-      .app { background: #111a33; box-shadow: 0 12px 36px rgba(0,0,0,0.5); }
-      .status { background: #0e1730; border-color: #243057; }
-      .cell { background: #0e1730; border-color: #243057; }
-      .cell:hover { background: #101c3a; border-color: #3550a0; }
-      button.secondary { background: #0e1730; color: #e9ecf5; border: 1px solid #243057; }
-      .footer { color: #b4bedb; }
-      .cell.win { background: #0f2a1a; border-color: #2fa85b; }
+    /* Stronger, clearer marks */
+    .cell {
+        color: #1f2a44;          /* darker default text */
+        font-weight: 900;        /* thicker X / O */
     }
+
+    /* Color-code players */
+    .cell.x {
+        color: #2f6fed;          /* modern blue */
+    }
+
+    .cell.o {
+        color: #e5484d;          /* modern red */
+    }
+
+    /* Make winning line more obvious but still soft */
+    .cell.win {
+        background: #eaf3ff;
+        border-color: #2f6fed;
+    }
+
   </style>
 </head>
 <body>
@@ -149,6 +159,9 @@
           btn.type = "button";
           btn.setAttribute("aria-label", `Cell ${i + 1}`);
           btn.textContent = board[i] ?? "";
+            if (board[i]) {
+            btn.classList.add(board[i].toLowerCase()); // adds "x" or "o"
+            }
           btn.disabled = gameOver || board[i] !== null;
 
           btn.addEventListener("click", () => handleMove(i));
