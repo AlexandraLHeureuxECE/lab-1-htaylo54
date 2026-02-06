@@ -1,0 +1,236 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Tic-Tac-Toe</title>
+  <style>
+    :root { color-scheme: light dark; }
+    body {
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      margin: 0;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      background: #f6f7fb;
+      color: #111;
+    }
+    .app {
+      width: min(520px, 92vw);
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.12);
+      padding: 20px;
+    }
+    h1 {
+      margin: 0 0 10px;
+      font-size: 1.25rem;
+      letter-spacing: 0.2px;
+    }
+    .status {
+      padding: 12px 14px;
+      border-radius: 12px;
+      background: #f1f3f8;
+      border: 1px solid #e5e8f2;
+      margin-bottom: 14px;
+      display: flex;
+      gap: 10px;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .status strong { font-weight: 700; }
+    .controls {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    button {
+      border: 0;
+      border-radius: 12px;
+      padding: 10px 12px;
+      font-weight: 600;
+      cursor: pointer;
+      background: #2f6fed;
+      color: #fff;
+    }
+    button.secondary {
+      background: #e9edf7;
+      color: #1f2a44;
+    }
+    button:active { transform: translateY(1px); }
+    .board {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-top: 14px;
+    }
+    .cell {
+      aspect-ratio: 1 / 1;
+      border-radius: 14px;
+      border: 1px solid #e5e8f2;
+      background: #fafbff;
+      display: grid;
+      place-items: center;
+      font-size: clamp(2.2rem, 8vw, 3.2rem);
+      font-weight: 800;
+      cursor: pointer;
+      user-select: none;
+      transition: transform 80ms ease, background 120ms ease, border-color 120ms ease;
+    }
+    .cell:hover { background: #f2f6ff; border-color: #cdd9ff; }
+    .cell:active { transform: scale(0.98); }
+    .cell[disabled] { cursor: not-allowed; opacity: 0.75; }
+    .cell.win {
+      background: #e8fff0;
+      border-color: #7ae39c;
+    }
+    .footer {
+      margin-top: 14px;
+      font-size: 0.9rem;
+      color: #56607a;
+    }
+
+    /* Dark mode tweaks */
+    @media (prefers-color-scheme: dark) {
+      body { background: #0b1020; color: #e9ecf5; }
+      .app { background: #111a33; box-shadow: 0 12px 36px rgba(0,0,0,0.5); }
+      .status { background: #0e1730; border-color: #243057; }
+      .cell { background: #0e1730; border-color: #243057; }
+      .cell:hover { background: #101c3a; border-color: #3550a0; }
+      button.secondary { background: #0e1730; color: #e9ecf5; border: 1px solid #243057; }
+      .footer { color: #b4bedb; }
+      .cell.win { background: #0f2a1a; border-color: #2fa85b; }
+    }
+  </style>
+</head>
+<body>
+  <main class="app" aria-label="Tic-Tac-Toe">
+    <h1>Tic-Tac-Toe</h1>
+
+    <div class="status" role="status" aria-live="polite">
+      <div id="statusText"><strong>Turn:</strong> Player X</div>
+      <div class="controls">
+        <button id="restartBtn" class="secondary" type="button" title="Restart anytime">Restart</button>
+        <button id="newGameBtn" type="button" title="Start a fresh game" style="display:none;">New Game</button>
+      </div>
+    </div>
+
+    <section class="board" id="board" aria-label="3 by 3 game board"></section>
+
+    <div class="footer">
+      Click a square to place your mark. X goes first.
+    </div>
+  </main>
+
+  <script>
+    (() => {
+      const boardEl = document.getElementById("board");
+      const statusTextEl = document.getElementById("statusText");
+      const restartBtn = document.getElementById("restartBtn");
+      const newGameBtn = document.getElementById("newGameBtn");
+
+      // Game state
+      let board = Array(9).fill(null); // "X" | "O" | null
+      let currentPlayer = "X";
+      let gameOver = false;
+
+      const winningLines = [
+        [0,1,2],[3,4,5],[6,7,8],
+        [0,3,6],[1,4,7],[2,5,8],
+        [0,4,8],[2,4,6]
+      ];
+
+      function renderBoard() {
+        boardEl.innerHTML = "";
+        for (let i = 0; i < 9; i++) {
+          const btn = document.createElement("button");
+          btn.className = "cell";
+          btn.type = "button";
+          btn.setAttribute("aria-label", `Cell ${i + 1}`);
+          btn.textContent = board[i] ?? "";
+          btn.disabled = gameOver || board[i] !== null;
+
+          btn.addEventListener("click", () => handleMove(i));
+          boardEl.appendChild(btn);
+        }
+      }
+
+      function setStatus(message, showNewGame = false) {
+        statusTextEl.innerHTML = message;
+        newGameBtn.style.display = showNewGame ? "inline-block" : "none";
+      }
+
+      function checkWinner() {
+        for (const [a, b, c] of winningLines) {
+          if (board[a] && board[a] === board[b] && board[a] === board[c]) {
+            return { winner: board[a], line: [a, b, c] };
+          }
+        }
+        return null;
+      }
+
+      function highlightWinningLine(line) {
+        // Add .win class to the relevant buttons
+        const cells = boardEl.querySelectorAll(".cell");
+        line.forEach(idx => cells[idx]?.classList.add("win"));
+      }
+
+      function handleMove(index) {
+        if (gameOver || board[index] !== null) return;
+
+        board[index] = currentPlayer;
+
+        const result = checkWinner();
+        if (result) {
+          gameOver = true;
+          renderBoard();
+          highlightWinningLine(result.line);
+          setStatus(`<strong>Winner:</strong> Player ${result.winner}`, true);
+          return;
+        }
+
+        const isTie = board.every(cell => cell !== null);
+        if (isTie) {
+          gameOver = true;
+          renderBoard();
+          setStatus(`<strong>It’s a tie.</strong>`, true);
+          return;
+        }
+
+        currentPlayer = currentPlayer === "X" ? "O" : "X";
+        renderBoard();
+        setStatus(`<strong>Turn:</strong> Player ${currentPlayer}`);
+      }
+
+      function resetGame({ keepFirstPlayer = false } = {}) {
+        board = Array(9).fill(null);
+        gameOver = false;
+        if (!keepFirstPlayer) currentPlayer = "X";
+        renderBoard();
+        setStatus(`<strong>Turn:</strong> Player ${currentPlayer}`);
+      }
+
+      restartBtn.addEventListener("click", () => {
+        // Restart anytime; keep it familiar: X goes first again
+        resetGame({ keepFirstPlayer: false });
+      });
+
+      newGameBtn.addEventListener("click", () => {
+        resetGame({ keepFirstPlayer: false });
+      });
+
+      // Initial render
+      renderBoard();
+      setStatus(`<strong>Turn:</strong> Player ${currentPlayer}`);
+
+      // Optional: keyboard support for accessibility (1-9 selects cells)
+      window.addEventListener("keydown", (e) => {
+        const n = Number(e.key);
+        if (!Number.isInteger(n) || n < 1 || n > 9) return;
+        handleMove(n - 1);
+      });
+    })();
+  </script>
+</body>
+</html>
